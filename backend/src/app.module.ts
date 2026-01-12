@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
@@ -9,6 +9,7 @@ import { StudentsModule } from './students/students.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { CoursesModule } from './courses/courses.module';
 import { GroupsModule } from './groups/groups.module';
+import { LessonsModule } from './lessons/lessons.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { GroupsModule } from './groups/groups.module';
     TeachersModule,
     CoursesModule,
     GroupsModule,
+    LessonsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

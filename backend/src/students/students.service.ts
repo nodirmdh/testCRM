@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+﻿import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
@@ -36,11 +36,7 @@ export class StudentsService {
     return this.ensureStudentInOrg(organizationId, id);
   }
 
-  async update(
-    organizationId: string,
-    id: string,
-    dto: UpdateStudentDto,
-  ) {
+  async update(organizationId: string, id: string, dto: UpdateStudentDto) {
     const updated = await this.prisma.student.updateMany({
       where: { id, organizationId },
       data: {
@@ -82,6 +78,16 @@ export class StudentsService {
       joinedAt: enrollment.joinedAt,
       group: enrollment.group,
     }));
+  }
+
+  async listAttendance(organizationId: string, studentId: string) {
+    await this.ensureStudentInOrg(organizationId, studentId);
+
+    return this.prisma.attendance.findMany({
+      where: { organizationId, studentId },
+      include: { lessonSession: true },
+      orderBy: { lessonSession: { date: 'desc' } },
+    });
   }
 
   private async ensureStudentInOrg(organizationId: string, studentId: string) {

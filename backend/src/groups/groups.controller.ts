@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   BadRequestException,
   Controller,
@@ -100,6 +100,14 @@ export class GroupsController {
   @Get(':groupId/students')
   listStudents(@Req() request: RequestWithUser, @Param('groupId') groupId: string) {
     return this.groupsService.listGroupStudents(
+      request.user.organizationId,
+      groupId,
+    );
+  }
+
+  @Get(':groupId/attendance')
+  listAttendance(@Req() request: RequestWithUser, @Param('groupId') groupId: string) {
+    return this.groupsService.listGroupAttendance(
       request.user.organizationId,
       groupId,
     );

@@ -39,6 +39,19 @@ enum TeacherGroupRole {
   ASSISTANT
 }
 
+enum LessonStatus {
+  PLANNED
+  COMPLETED
+  CANCELED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
 model Organization {
   id            String         @id @default(uuid())
   name          String
@@ -52,6 +65,8 @@ model Organization {
   groups        Group[]
   enrollments   Enrollment[]
   teacherGroups TeacherGroup[]
+  lessons       LessonSession[]
+  attendance    Attendance[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 }
@@ -94,6 +109,7 @@ model Student {
   status         StudentStatus @default(ACTIVE)
   organization   Organization  @relation(fields: [organizationId], references: [id])
   enrollments    Enrollment[]
+  attendance     Attendance[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -110,6 +126,7 @@ model Teacher {
   note           String?
   organization   Organization  @relation(fields: [organizationId], references: [id])
   teacherGroups  TeacherGroup[]
+  lessons        LessonSession[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -144,6 +161,7 @@ model Group {
   course         Course        @relation(fields: [courseId], references: [id])
   enrollments    Enrollment[]
   teacherGroups  TeacherGroup[]
+  lessons        LessonSession[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -186,4 +204,42 @@ model TeacherGroup {
   @@index([organizationId])
   @@index([teacherId])
   @@index([groupId])
+}
+
+model LessonSession {
+  id             String        @id @default(uuid())
+  organizationId String
+  groupId        String
+  teacherId      String
+  date           DateTime
+  topic          String?
+  notes          String?
+  status         LessonStatus  @default(PLANNED)
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  group          Group         @relation(fields: [groupId], references: [id])
+  teacher        Teacher       @relation(fields: [teacherId], references: [id])
+  attendance     Attendance[]
+  createdAt      DateTime      @default(now())
+
+  @@index([organizationId])
+  @@index([groupId])
+  @@index([teacherId])
+}
+
+model Attendance {
+  id              String           @id @default(uuid())
+  organizationId  String
+  lessonSessionId String
+  studentId       String
+  status          AttendanceStatus
+  comment         String?
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  lessonSession   LessonSession    @relation(fields: [lessonSessionId], references: [id])
+  student         Student          @relation(fields: [studentId], references: [id])
+  createdAt       DateTime         @default(now())
+
+  @@unique([lessonSessionId, studentId])
+  @@index([organizationId])
+  @@index([lessonSessionId])
+  @@index([studentId])
 }

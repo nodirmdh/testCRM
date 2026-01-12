@@ -1,4 +1,4 @@
-import {
+﻿import {
   ConflictException,
   Injectable,
   NotFoundException,
@@ -142,6 +142,16 @@ export class GroupsService {
       joinedAt: enrollment.joinedAt,
       student: enrollment.student,
     }));
+  }
+
+  async listGroupAttendance(organizationId: string, groupId: string) {
+    await this.ensureGroupInOrg(organizationId, groupId);
+
+    return this.prisma.attendance.findMany({
+      where: { organizationId, lessonSession: { groupId } },
+      include: { lessonSession: true, student: true },
+      orderBy: { lessonSession: { date: 'desc' } },
+    });
   }
 
   async listGroupTeachers(organizationId: string, groupId: string) {

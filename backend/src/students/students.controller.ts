@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Delete,
@@ -52,6 +52,11 @@ export class StudentsController {
   @Get(':id/groups')
   listGroups(@Req() request: RequestWithUser, @Param('id') id: string) {
     return this.studentsService.listActiveGroups(request.user.organizationId, id);
+  }
+
+  @Get(':id/attendance')
+  listAttendance(@Req() request: RequestWithUser, @Param('id') id: string) {
+    return this.studentsService.listAttendance(request.user.organizationId, id);
   }
 
   @Patch(':id')

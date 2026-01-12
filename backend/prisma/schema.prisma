@@ -28,6 +28,17 @@ enum StudentStatus {
   ARCHIVED
 }
 
+enum GroupStatus {
+  ACTIVE
+  PLANNED
+  ARCHIVED
+}
+
+enum TeacherGroupRole {
+  LEAD
+  ASSISTANT
+}
+
 model Organization {
   id            String         @id @default(uuid())
   name          String
@@ -36,6 +47,11 @@ model Organization {
   subscriptions Subscription[]
   users         User[]
   students      Student[]
+  teachers      Teacher[]
+  courses       Course[]
+  groups        Group[]
+  enrollments   Enrollment[]
+  teacherGroups TeacherGroup[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 }
@@ -77,8 +93,97 @@ model Student {
   birthDate      DateTime?
   status         StudentStatus @default(ACTIVE)
   organization   Organization  @relation(fields: [organizationId], references: [id])
+  enrollments    Enrollment[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
   @@index([organizationId])
+}
+
+model Teacher {
+  id             String        @id @default(uuid())
+  organizationId String
+  fullName       String
+  phone          String
+  specialization String?
+  isActive       Boolean       @default(true)
+  note           String?
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  teacherGroups  TeacherGroup[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+}
+
+model Course {
+  id             String        @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  durationMonths Int?
+  isActive       Boolean       @default(true)
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  groups         Group[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+}
+
+model Group {
+  id             String        @id @default(uuid())
+  organizationId String
+  courseId       String
+  name           String
+  scheduleText   String
+  startDate      DateTime?
+  endDate        DateTime?
+  status         GroupStatus   @default(ACTIVE)
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  course         Course        @relation(fields: [courseId], references: [id])
+  enrollments    Enrollment[]
+  teacherGroups  TeacherGroup[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([courseId])
+}
+
+model Enrollment {
+  id             String        @id @default(uuid())
+  organizationId String
+  studentId      String
+  groupId        String
+  joinedAt       DateTime      @default(now())
+  leftAt         DateTime?
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  student        Student       @relation(fields: [studentId], references: [id])
+  group          Group         @relation(fields: [groupId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([studentId])
+  @@index([groupId])
+  @@index([studentId, groupId, leftAt])
+}
+
+model TeacherGroup {
+  id             String           @id @default(uuid())
+  organizationId String
+  teacherId      String
+  groupId        String
+  role           TeacherGroupRole @default(LEAD)
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  teacher        Teacher          @relation(fields: [teacherId], references: [id])
+  group          Group            @relation(fields: [groupId], references: [id])
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([teacherId, groupId])
+  @@index([organizationId])
+  @@index([teacherId])
+  @@index([groupId])
 }

@@ -11,20 +11,20 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { StudentsService } from './students.service';
-import { CreateStudentDto } from './dto/create-student.dto';
-import { UpdateStudentDto } from './dto/update-student.dto';
+import { TeachersService } from './teachers.service';
+import { CreateTeacherDto } from './dto/create-teacher.dto';
+import { UpdateTeacherDto } from './dto/update-teacher.dto';
 import { AccessTokenGuard } from '../auth/access-token.guard';
 import { RequestWithUser } from '../common/request-user';
 
 @UseGuards(AccessTokenGuard)
-@Controller('students')
-export class StudentsController {
-  constructor(private readonly studentsService: StudentsService) {}
+@Controller('teachers')
+export class TeachersController {
+  constructor(private readonly teachersService: TeachersService) {}
 
   @Post()
-  create(@Req() request: RequestWithUser, @Body() dto: CreateStudentDto) {
-    return this.studentsService.create(request.user.organizationId, dto);
+  create(@Req() request: RequestWithUser, @Body() dto: CreateTeacherDto) {
+    return this.teachersService.create(request.user.organizationId, dto);
   }
 
   @Get()
@@ -36,7 +36,7 @@ export class StudentsController {
   ) {
     const skipNumber = skip ? Number(skip) : 0;
     const takeNumber = take ? Number(take) : 50;
-    return this.studentsService.findAll(
+    return this.teachersService.findAll(
       request.user.organizationId,
       search,
       skipNumber,
@@ -46,25 +46,20 @@ export class StudentsController {
 
   @Get(':id')
   findOne(@Req() request: RequestWithUser, @Param('id') id: string) {
-    return this.studentsService.findOne(request.user.organizationId, id);
-  }
-
-  @Get(':id/groups')
-  listGroups(@Req() request: RequestWithUser, @Param('id') id: string) {
-    return this.studentsService.listActiveGroups(request.user.organizationId, id);
+    return this.teachersService.findOne(request.user.organizationId, id);
   }
 
   @Patch(':id')
   update(
     @Req() request: RequestWithUser,
     @Param('id') id: string,
-    @Body() dto: UpdateStudentDto,
+    @Body() dto: UpdateTeacherDto,
   ) {
-    return this.studentsService.update(request.user.organizationId, id, dto);
+    return this.teachersService.update(request.user.organizationId, id, dto);
   }
 
   @Delete(':id')
   remove(@Req() request: RequestWithUser, @Param('id') id: string) {
-    return this.studentsService.remove(request.user.organizationId, id);
+    return this.teachersService.remove(request.user.organizationId, id);
   }
 }

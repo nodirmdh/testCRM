@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
@@ -33,13 +33,7 @@ export class StudentsService {
   }
 
   async findOne(organizationId: string, id: string) {
-    const student = await this.prisma.student.findFirst({
-      where: { id, organizationId },
-    });
-    if (!student) {
-      throw new NotFoundException('Student not found');
-    }
-    return student;
+    return this.ensureStudentInOrg(organizationId, id);
   }
 
   async update(
@@ -73,5 +67,33 @@ export class StudentsService {
     }
 
     return { id };
+  }
+
+  async listActiveGroups(organizationId: string, studentId: string) {
+    await this.ensureStudentInOrg(organizationId, studentId);
+
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { organizationId, studentId, leftAt: null },
+      include: { group: true },
+      orderBy: { joinedAt: 'desc' },
+    });
+
+    return enrollments.map((enrollment) => ({
+      joinedAt: enrollment.joinedAt,
+      group: enrollment.group,
+    }));
+  }
+
+  private async ensureStudentInOrg(organizationId: string, studentId: string) {
+    const student = await this.prisma.student.findUnique({
+      where: { id: studentId },
+    });
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+    if (student.organizationId !== organizationId) {
+      throw new ConflictException('Student belongs to another organization');
+    }
+    return student;
   }
 }
